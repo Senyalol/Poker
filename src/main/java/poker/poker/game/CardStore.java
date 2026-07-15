@@ -1,20 +1,24 @@
 package poker.poker.game;
 
-import lombok.RequiredArgsConstructor;
 import poker.poker.domain.Card;
 import poker.poker.domain.Rank;
 import poker.poker.domain.Suit;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-@RequiredArgsConstructor
 public class CardStore {
 
     private final List<Card> deck;                              // сама колода
     private final Map<String, List<Card>> hands;
+
+    /**
+     * Конструктор создаёт пустую колоду и сразу заполняет её 52 картами
+     */
+    public CardStore() {
+        this.deck = new ArrayList<>();
+        this.hands = new HashMap<>();
+        newDeck();  // сразу создаём колоду
+    }
 
     /**
      * Создаёт новую колоду из 52 карт (4 масти × 13 достоинств)
