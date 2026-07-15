@@ -1,4 +1,8 @@
 package poker.poker.domain;
 
-public class PlayerStatus {
+public enum PlayerStatus {
+    WAITING,  // Ждёт начала раздачи (сидит за столом, но не в игре)
+    ACTIVE,   // Активно участвует в торгах (есть карты, может ходить)
+    FOLDED,   // Сбросил карты (не претендует на банк)
+    ALL_IN    // Поставил всё (в игре, но решений больше не принимает)
 }
