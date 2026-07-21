@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Texas Hold'em Poker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #1a1a2e;
+            color: white;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* Верхняя панель */
+        .login-panel {
+            background: #16213e;
+            padding: 15px 30px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .login-panel input {
+            padding: 8px 15px;
+            border: 2px solid #0f3460;
+            border-radius: 5px;
+            background: #1a1a2e;
+            color: white;
+            font-size: 14px;
+        }
+
+        .login-panel button {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .btn-connect {
+            background: #e94560;
+            color: white;
+        }
+
+        .btn-connect:hover {
+            background: #c73b54;
+        }
+
+        .btn-start {
+            background: #4caf50;
+            color: white;
+        }
+
+        .btn-start:hover {
+            background: #388e3c;
+        }
+
+        .status {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+
+        .status.connected {
+            background: #4caf50;
+        }
+
+        .status.disconnected {
+            background: #e94560;
+        }
+
+        /* Игровое поле */
+        .table-container {
+            width: 100%;
+            max-width: 900px;
+            background: #0f3460;
+            border-radius: 150px;
+            padding: 60px 40px;
+            position: relative;
+            margin: 20px 0;
+            border: 8px solid #533483;
+            box-shadow: 0 0 50px rgba(83, 52, 131, 0.5);
+        }
+
+        /* Общие карты */
+        .community-cards {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .card {
+            width: 70px;
+            height: 100px;
+            background: white;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            box-shadow: 3px 3px 10px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        .card.red {
+            color: #d32f2f;
+        }
+
+        .card.black {
+            color: #212121;
+        }
+
+        .card .rank {
+            font-size: 28px;
+        }
+
+        .card .suit {
+            font-size: 30px;
+        }
+
+        /* Банк */
+        .pot {
+            text-align: center;
+            font-size: 20px;
+            margin: 15px 0;
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        .pot span {
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        /* Игроки */
+        .players-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .player-spot {
+            background: #16213e;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            border: 3px solid transparent;
+            transition: 0.3s;
+            position: relative;
+        }
+
+        .player-spot.active {
+            border-color: #ffd700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+
+        .player-spot.folded {
+            opacity: 0.5;
+        }
+
+        .player-spot.you {
+            background: #1a3a4a;
+        }
+
+        .player-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .player-stack {
+            color: #ffd700;
+            font-size: 16px;
+        }
+
+        .player-bet {
+            color: #aaa;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .player-cards {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .player-cards .card {
+            width: 45px;
+            height: 65px;
+            font-size: 16px;
+        }
+
+        /* Кнопки действий */
+        .actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .actions button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: 0.3s;
+            color: white;
+        }
+
+        .btn-fold {
+            background: #757575;
+        }
+        .btn-check {
+            background: #2196f3;
+        }
+        .btn-call {
+            background: #ff9800;
+        }
+        .btn-raise {
+            background: #e94560;
+        }
+        .btn-allin {
+            background: #9c27b0;
+        }
+
+        .actions button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .actions button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .raise-controls {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+
+        .raise-controls input {
+            width: 80px;
+            padding: 10px;
+            border: 2px solid #e94560;
+            border-radius: 8px;
+            background: #1a1a2e;
+            color: white;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        /* Информация */
+        .info {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin: 10px 0;
+            color: #aaa;
+        }
+
+        .phase-badge {
+            background: #533483;
+            padding: 5px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .error-message {
+            background: #e94560;
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin: 10px 0;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<!-- Панель подключения -->
+<div class="login-panel">
+    <input type="text" id="playerIdInput" placeholder="player1" value="player1">
+    <button class="btn-connect" onclick="connect()">Подключиться</button>
+    <button class="btn-start" onclick="startHand()">Новая раздача</button>
+    <span id="status" class="status disconnected">Отключён</span>
+</div>
+
+<div id="errorMessage" class="error-message"></div>
+
+<!-- Игровой стол -->
+<div class="table-container">
+    <div class="info">
+        <span>Фаза: <span id="phase" class="phase-badge">Ожидание</span></span>
+        <span>Дилер: <span id="dealer">-</span></span>
+    </div>
+
+    <!-- Общие карты -->
+    <div id="communityCards" class="community-cards"></div>
+
+    <!-- Банк -->
+    <div class="pot">Банк: <span id="pot">0</span></div>
+
+    <!-- Игроки -->
+    <div id="playersGrid" class="players-grid"></div>
+</div>
+
+<!-- Кнопки действий -->
+<div class="actions">
+    <button class="btn-fold" onclick="sendAction(0)">Фолд</button>
+    <button class="btn-check" onclick="sendAction(1)">Чек</button>
+    <button class="btn-call" onclick="sendAction(2)">Колл</button>
+    <div class="raise-controls">
+        <input type="number" id="betAmount" value="20" min="20">
+        <button class="btn-raise" onclick="sendRaise()">Рейз</button>
+    </div>
+    <button class="btn-allin" onclick="sendAction(5)">All-in</button>
+</div>
+
+<script>
+    let ws = null;
+    let myPlayerId = null;
+    let myHand = [];
+    let gameState = null;
+
+    // Сущности карт
+    const SUITS = ['♥', '♦', '♣', '♠'];
+    const RANKS = ['', '', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+
+    function connect() {
+        myPlayerId = document.getElementById('playerIdInput').value;
+        if (!myPlayerId) return;
+
+        const url = `ws://localhost:8080/ws?playerId=${myPlayerId}`;
+        ws = new WebSocket(url);
+
+        ws.onopen = () => {
+            document.getElementById('status').textContent = 'Подключён';
+            document.getElementById('status').className = 'status connected';
+        };
+
+        ws.onmessage = (event) => {
+            const msg = JSON.parse(event.data);
+            handleMessage(msg);
+        };
+
+        ws.onclose = () => {
+            document.getElementById('status').textContent = 'Отключён';
+            document.getElementById('status').className = 'status disconnected';
+        };
+
+        ws.onerror = (error) => {
+            showError('Ошибка соединения');
+        };
+    }
+
+    function handleMessage(msg) {
+        switch (msg.type) {
+            case 'game_state':
+                gameState = msg.data;
+                renderGame();
+                break;
+            case 'private_state':
+                myHand = msg.data.hand || [];
+                renderGame();
+                break;
+            case 'error':
+                showError(msg.data.message);
+                break;
+        }
+    }
+
+    function sendAction(actionCode) {
+        if (!ws || ws.readyState !== WebSocket.OPEN) return;
+        hideError();
+
+        const msg = {
+            type: 'action',
+            data: {
+                action: actionCode,
+                amount: 0
+            }
+        };
+        ws.send(JSON.stringify(msg));
+    }
+
+    function sendRaise() {
+        if (!ws || ws.readyState !== WebSocket.OPEN) return;
+        hideError();
+
+        const amount = parseInt(document.getElementById('betAmount').value) || 20;
+        const msg = {
+            type: 'action',
+            data: {
+                action: 4,
+                amount: amount
+            }
+        };
+        ws.send(JSON.stringify(msg));
+    }
+
+    function startHand() {
+        if (!ws || ws.readyState !== WebSocket.OPEN) return;
+        ws.send(JSON.stringify({ type: 'start_hand', data: {} }));
+    }
+
+    function getSuitSymbol(suit) {
+        switch (suit) {
+            case 'HEARTS': return '♥';
+            case 'DIAMONDS': return '♦';
+            case 'CLUBS': return '♣';
+            case 'SPADES': return '♠';
+            default: return '?';
+        }
+    }
+
+    function getSuitColor(suit) {
+        return (suit === 'HEARTS' || suit === 'DIAMONDS') ? 'red' : 'black';
+    }
+
+    function getRankSymbol(rank) {
+        if (rank === 'ACE') return 'A';
+        if (rank === 'KING') return 'K';
+        if (rank === 'QUEEN') return 'Q';
+        if (rank === 'JACK') return 'J';
+        if (rank === 'TEN') return '10';
+        return rank.charAt(0);
+    }
+
+    function getPhaseName(phase) {
+        const names = {
+            'WAITING': 'Ожидание',
+            'PREFLOP': 'Префлоп',
+            'FLOP': 'Флоп',
+            'TURN': 'Тёрн',
+            'RIVER': 'Ривер',
+            'SHOWDOWN': 'Шоудаун'
+        };
+        return names[phase] || phase;
+    }
+
+    function createCardElement(card) {
+        if (!card) return '<div class="card" style="background:#333"></div>';
+
+        const suit = card.suit || '';
+        const rank = card.rank || '';
+        const suitSym = getSuitSymbol(suit);
+        const color = getSuitColor(suit);
+        const rankSym = getRankSymbol(rank);
+
+        return `
+                <div class="card ${color}">
+                    <div class="rank">${rankSym}</div>
+                    <div class="suit">${suitSym}</div>
+                </div>
+            `;
+    }
+
+    function renderGame() {
+        if (!gameState) return;
+
+        // Фаза
+        document.getElementById('phase').textContent = getPhaseName(gameState.phase);
+
+        // Дилер
+        document.getElementById('dealer').textContent = 'Место ' + (gameState.dealerSeat + 1);
+
+        // Банк
+        document.getElementById('pot').textContent = gameState.pot;
+
+        // Общие карты
+        let commCardsHtml = '';
+        for (let i = 0; i < 5; i++) {
+            const card = gameState.communityCards && gameState.communityCards[i];
+            commCardsHtml += createCardElement(card || null);
+        }
+        document.getElementById('communityCards').innerHTML = commCardsHtml;
+
+        // Игроки
+        let playersHtml = '';
+        const players = gameState.players || [];
+
+        // Показываем только первые 3 места (как в Go)
+        for (let i = 0; i < 3; i++) {
+            const player = players.find(p => p.seat === i);
+
+            if (player) {
+                const isMe = player.id === myPlayerId;
+                const isActive = gameState.currentTurnSeat === i && player.status === 'ACTIVE';
+                const isFolded = player.status === 'FOLDED';
+
+                let cssClass = 'player-spot';
+                if (isActive) cssClass += ' active';
+                if (isFolded) cssClass += ' folded';
+                if (isMe) cssClass += ' you';
+
+                // Показываем карты только для себя
+                let cardsHtml = '';
+                if (isMe && myHand.length > 0) {
+                    cardsHtml = '<div class="player-cards">';
+                    myHand.forEach(card => {
+                        cardsHtml += createCardElement(card);
+                    });
+                    cardsHtml += '</div>';
+                } else if (isMe) {
+                    cardsHtml = '<div class="player-cards">' +
+                        '<div class="card" style="background:#333"></div>' +
+                        '<div class="card" style="background:#333"></div>' +
+                        '</div>';
+                }
+
+                const statusText = {
+                    'WAITING': 'Ждёт',
+                    'ACTIVE': 'В игре',
+                    'FOLDED': 'Сбросил',
+                    'ALL_IN': 'All-in'
+                };
+
+                playersHtml += `
+                        <div class="${cssClass}">
+                            <div class="player-name">${player.id} ${isMe ? '(Вы)' : ''}</div>
+                            <div class="player-stack">${player.stack} фишек</div>
+                            ${player.committed > 0 ? `<div class="player-bet">Ставка: ${player.committed}</div>` : ''}
+                            <div style="font-size:12px;color:#aaa;margin-top:5px">${statusText[player.status] || player.status}</div>
+                            ${cardsHtml}
+                        </div>
+                    `;
+            } else {
+                playersHtml += `
+                        <div class="player-spot" style="opacity:0.3">
+                            <div class="player-name">Место ${i + 1}</div>
+                            <div class="player-stack">Пусто</div>
+                        </div>
+                    `;
+            }
+        }
+        document.getElementById('playersGrid').innerHTML = playersHtml;
+    }
+
+    function showError(message) {
+        const el = document.getElementById('errorMessage');
+        el.textContent = message;
+        el.style.display = 'block';
+        setTimeout(() => {
+            el.style.display = 'none';
+        }, 3000);
+    }
+
+    function hideError() {
+        document.getElementById('errorMessage').style.display = 'none';
+    }
+</script>
+</body>
+</html>
