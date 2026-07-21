@@ -72,6 +72,19 @@ public class GameEngine {
         return true;
     }
 
+    // В GameEngine уже должны быть:
+    public PublicGameState getPublicState() {
+        return state;
+    }
+
+    public PrivateState getPrivateState(String playerId) {
+        List<Card> hand = privateHands.get(playerId);
+        if (hand == null || hand.size() < 2) {
+            return null;
+        }
+        return new PrivateState(hand.get(0), hand.get(1));
+    }
+
     /**
      * Удаляет игрока со стола
      */
