@@ -1,6 +1,8 @@
 services:
-  poker:
-    build: .
+  poker-sercive:
+    build:
+      context: ./java-sercive
+      dockerfile: Dockerfile
     ports:
       - "8080:8080"
     environment:
